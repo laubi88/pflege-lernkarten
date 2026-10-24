@@ -152,6 +152,7 @@
   <div class="flaeche held">
    <h3>Willkommen</h3>
    <p class="klein-grau">Valentino fragt, du antwortest laut. Die App merkt sich, was schon sitzt, und fragt schwierige Karten öfter.</p>
+   <button class="rand" id="bAnleitung" style="margin-top:10px">🔊 Anleitung anhören</button>
   </div>
   <div class="flaeche">
    <div class="chips"><button class="chip an" id="tabLogin">Anmelden</button><button class="chip" id="tabNeu">Neu registrieren</button></div>
@@ -425,7 +426,12 @@ function mische(a){a=a.slice();for(var k=a.length-1;k>0;k--){var j=Math.floor(Ma
 var konten=lies('lk_konten',{}), namen=lies('lk_namen',{}), nutzer=lies('lk_nutzer',null), neu=false;
 function modus(n){neu=n;$('lCode').hidden=!n;$('lName').hidden=!n;$('bLogin').textContent=n?'Konto anlegen':'Anmelden';
  $('tabNeu').classList.toggle('an',n);$('tabLogin').classList.toggle('an',!n);$('loginFehler').textContent='';}
-$('tabLogin').onclick=function(){modus(false);};$('tabNeu').onclick=function(){modus(true);};
+$('tabLogin').onclick=function(){modus(false);};
+/* Valentino liest die Anmeldung vor; ein zweiter Tipp stoppt */
+$('bAnleitung').onclick=function(){var b=$('bAnleitung');
+ if(b.dataset.an){stopTon();b.dataset.an='';b.textContent='🔊 Anleitung anhören';return;}
+ b.dataset.an='1';b.textContent='⏹ Anleitung stoppen';
+ spiele('G_Anmeldung',true).then(function(){b.dataset.an='';b.textContent='🔊 Anleitung anhören';});};$('tabNeu').onclick=function(){modus(true);};
 $('bLogin').onclick=async function(){
  var m=$('email').value.trim().toLowerCase(), p=$('pass').value, f=$('loginFehler');
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m)){f.textContent='Bitte eine gültige E-Mail-Adresse eingeben.';return;}

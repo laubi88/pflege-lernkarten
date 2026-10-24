@@ -1,5 +1,5 @@
 /* Offline-Speicher: App-Dateien vorab, Valentino-Aufnahmen beim ersten Abspielen. */
-const VERSION = 'lk-v6';
+const VERSION = 'lk-v7';
 const KERN = ['./', './index.html', './karten.js', './vokabeln.js', './hoerbuch.js', './termine.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(KERN))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
