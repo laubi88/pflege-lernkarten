@@ -1,5 +1,5 @@
 /* Offline-Speicher: App-Dateien vorab, Valentino-Aufnahmen beim ersten Abspielen. */
-const VERSION = 'lk-v4';
+const VERSION = 'lk-v5';
 const KERN = ['./', './index.html', './karten.js', './vokabeln.js', './hoerbuch.js', './termine.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(KERN))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
@@ -21,4 +21,9 @@ self.addEventListener('fetch', e => {
   }
   e.respondWith(fetch(e.request).then(a => { const k = a.clone(); caches.open(VERSION).then(c => c.put(e.request, k)); return a; })
     .catch(() => caches.match(e.request)));
+});
+/* Tippen auf eine Prüfungs-Erinnerung öffnet die App auf der Startseite */
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window' }).then(l => l.length ? l[0].focus() : self.clients.openWindow('./index.html?ansicht=vHeute')));
 });

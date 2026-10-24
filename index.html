@@ -128,7 +128,24 @@
 <body>
 <main>
  <div class="kopfzeile"><img src="icons/icon-192.png" alt=""><div><h1>Pflege Lernkarten</h1><div class="klein-grau" id="hallo">Lernen mit Valentino</div></div>
-  <button class="rand klein rechts" id="bAbmelden" hidden>Abmelden</button></div>
+  <button class="rand klein rechts" id="bGlocke" hidden aria-label="Prüfungs-Erinnerungen" style="font-size:1.1rem;padding:6px 10px">🔕</button>
+  <button class="rand klein" id="bAbmelden" hidden>Abmelden</button></div>
+
+ <!-- Hinweis-Kasten zu den Prüfungs-Erinnerungen (einmal nach der ersten Anmeldung, danach über die Glocke) -->
+ <div id="glockeBox" hidden style="position:fixed;inset:0;z-index:20;background:rgba(5,10,20,.78);display:grid;place-items:center;padding:16px">
+  <div class="flaeche held" style="max-width:460px;width:100%;margin:0;max-height:90vh;overflow:auto">
+   <h3>🔔 Prüfungs-Erinnerungen</h3>
+   <p>Wenn du die Erinnerungen einschaltest:</p>
+   <ul style="padding-left:20px;line-height:1.5;margin:6px 0">
+    <li>Ab <b>drei Tagen vor einer Prüfung oder Klausur</b> bekommst du eine Meldung auf dein Handy, einmal am Tag, wenn du die App öffnest.</li>
+    <li>Vor jeder Prüfung bietet dir die App eine <b>Wissensstandsabfrage</b> an: 15 gemischte Fragen zu den Prüfungsthemen, ohne Hilfe, wie im Test.</li>
+    <li>Danach siehst du, <b>was schon sitzt und wo du noch nacharbeiten solltest</b>, mit Knöpfen zum gezielten Üben.</li>
+   </ul>
+   <p class="klein-grau">Prüfungstermine trägst du auf der Startseite ein. Klausurtage aus dem Stundenplan erkennt die App selbst. Deine Daten bleiben auf deinem Handy.</p>
+   <p class="klein-grau" id="glockeStatus"></p>
+   <div class="knoepfe"><button class="haupt" id="glockeAn">Erinnerungen einschalten</button><button class="rand" id="glockeNein">Jetzt nicht</button></div>
+  </div>
+ </div>
 
  <!-- ===== Anmeldung ===== -->
  <section id="vAnmelden" hidden>
@@ -174,6 +191,8 @@
    <details style="margin-top:10px"><summary class="klein-grau" style="cursor:pointer">＋ Prüfung oder Klausur eintragen</summary>
     <label>Datum<input type="date" id="pDatum"></label>
     <label>Thema<input id="pThema" placeholder="zum Beispiel Klausur CE 2.1 Mobilität"></label>
+    <label>Welche Stapel gehören zur Prüfung?</label>
+    <div class="chips" id="pStapel" style="margin-top:6px"></div>
     <div class="knoepfe"><button class="haupt klein" id="pSpeichern">Speichern</button></div>
    </details>
    <div class="knoepfe" id="erinnerungBox"><button class="rand klein" id="bErinnerung">🔔 Erinnerungen auf dem Handy erlauben</button></div>
@@ -268,6 +287,7 @@
    <h3 id="eTitel">Runde geschafft</h3>
    <p class="klein-grau" id="eText"></p>
   </div>
+  <div id="eStapel"></div>
   <div id="eFehlerBox" hidden><h2>Diese Karten üben wir noch</h2><div class="flaeche" style="margin-top:0" id="eFehler"></div></div>
   <div class="knoepfe"><button class="haupt" id="bEFehler" hidden>Fehler nochmal üben</button><button class="rand" id="bEStart">Zur Startseite</button></div>
  </section>
@@ -445,7 +465,7 @@ function serie(){var h=heute(),n=0;if(!stand.tage[h])h--;while(stand.tage[h]){n+
 var ANSICHTEN=['vAnmelden','vHeute','vLernen','vSprechen','vKarte','vHoeren','vEnde','vVokabeln','vVokQuiz','vFaelle','vFortschritt'];
 function zeige(v){
  ANSICHTEN.forEach(function(n){$(n).hidden=(n!==v);});
- $('bAbmelden').hidden=(v==='vAnmelden');$('nav').hidden=(v==='vAnmelden');
+ $('bAbmelden').hidden=(v==='vAnmelden');$('bGlocke').hidden=(v==='vAnmelden');$('nav').hidden=(v==='vAnmelden');
  var navZiel={vSprechen:'vLernen',vKarte:'vLernen',vHoeren:'vLernen',vEnde:'vLernen',vVokQuiz:'vVokabeln'}[v]||v;
  alle('nav button').forEach(function(b){b.classList.toggle('an',b.dataset.nav===navZiel);});
  if(v==='vHeute')baueHeute();if(v==='vLernen')baueLernen();if(v==='vVokabeln')baueVokabeln();if(v==='vFortschritt')baueFortschritt();if(v==='vFaelle')baueFaelle();
@@ -473,6 +493,7 @@ function baueHeute(){
  $('kVok').textContent=VOK.filter(function(v){return istSicher(eintrag('v',v.id));}).length;
  $('tipp').textContent=TIPPS[h%TIPPS.length];
  baueTermine();
+ if(nutzer&&!lies('lk_glocke_'+nutzer,null))glockeOeffnen();   /* Hinweis-Kasten einmal nach der ersten Anmeldung */
  if(SPENDE_URL){$('spende').hidden=false;$('spendeLink').href=SPENDE_URL;}
  $('stapelUebersicht').innerHTML=D.decks.map(function(d){var s=stapelZahlen(d.id);
   return '<button class="art" data-deck="'+d.id+'" style="display:block"><div class="reihe zwischen"><b>'+esc(d.name)+'</b><span class="marke">'+(s.faellig?s.faellig+' fällig':s.sicher+' von '+s.gesamt+' sicher')+'</span></div>'+
@@ -534,6 +555,18 @@ function zeigeEnde(){
  $('eFehlerBox').hidden=!falsch.length;$('bEFehler').hidden=!falsch.length;
  $('eFehler').innerHTML=falsch.map(function(k){return '<div class="vok"><b style="color:var(--text)">'+esc(k.q)+'</b><div class="detail antwort">'+esc(k.a)+'</div></div>';}).join('');
  $('bEFehler').onclick=function(){starteRunde(r.modus==='pruefung'?'sprechen':r.modus,mische(falsch));};
+ $('eStapel').innerHTML='';
+ if(r.modus==='pruefung'){   /* Auswertung je Stapel: was sitzt, wo muss noch geschraubt werden */
+  var je={};r.erg.forEach(function(x){var d=KARTE[x.id].deck;je[d]=je[d]||{ok:0,n:0};je[d].n++;if(x.ok)je[d].ok++;});
+  var schwach=Object.keys(je).filter(function(d){return je[d].ok/je[d].n<0.7;});
+  $('eText').textContent=ok+' von '+n+' Fragen richtig. '+(p>=85?'Du bist gut vorbereitet, geh mit gutem Gefühl in die Prüfung.':p>=60?'Fast geschafft. An einigen Themen solltest du noch schrauben.':'Hier sind noch Lücken. Übe die markierten Themen vor der Prüfung.');
+  $('eStapel').innerHTML='<h2>Auswertung nach Themen</h2><div class="flaeche" style="margin-top:0">'+Object.keys(je).map(function(d){var q=Math.round(je[d].ok/je[d].n*100);
+   return '<div style="margin:8px 0 12px"><div class="reihe zwischen"><b>'+esc(deckName(d))+'</b><span style="color:'+(q>=85?'var(--gruen)':q>=60?'var(--gelb)':'var(--rot)')+';font-weight:700">'+je[d].ok+' von '+je[d].n+'</span></div>'+
+    '<div class="balken" style="margin-top:6px"><i class="b-sicher" style="width:'+q+'%"></i></div>'+(q<70?'<button class="rand klein" data-staerken="'+d+'" style="margin-top:8px">Dieses Thema üben</button>':'')+'</div>';}).join('')+'</div>';
+  alle('#eStapel [data-staerken]').forEach(function(b){b.onclick=function(){wahl.deck=b.dataset.staerken;wahl.auswahl='alle';starteRunde('sprechen');};});
+  if(r.wissen){var w=lies('lk_wissen_'+nutzer,{});w[r.wissen.key]={p:p,d:new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10)};schreib('lk_wissen_'+nutzer,w);
+   $('eTitel').textContent='Wissensstand: '+(p>=85?'gut vorbereitet':p>=60?'fast geschafft':'noch Lücken');}
+ }
  zeige('vEnde');if(p>=80&&n>=5)konfetti();
  if(r.modus!=='hoeren')spiele('G_Geschafft',true);
 }
@@ -785,9 +818,17 @@ function tagNr(iso){var p=iso.split('-');return Math.floor(Date.UTC(+p[0],p[1]-1
 function datumText(iso){var p=iso.split('-'),t=['So','Mo','Di','Mi','Do','Fr','Sa'][new Date(Date.UTC(+p[0],p[1]-1,+p[2])).getUTCDay()];return t+', '+(+p[2])+'.'+(+p[1])+'.';}
 function ceStapel(titel){var m=titel.match(/CE[\s.]*(\d)\.(\d)/);return m?CE_STAPEL[m[1]+'.'+m[2]]:null;}
 function eigenePruef(){return lies('lk_pruef_'+nutzer,[]);}
+/* Stapel einer Prüfung: selbst gewählt, sonst aus der CE-Nummer im Thema, sonst die Lerneinheiten der drei Wochen davor */
+function pruefStapel(p){
+ if(p.s&&p.s.length)return p.s;
+ var st=ceStapel(p.t||'');if(st&&D.decks.some(function(d){return d.id===st;}))return [st];
+ var s={},bis=tagNr(p.d);TE.termine.forEach(function(e){var n=tagNr(e[0]);if(n<=bis&&n>bis-21){var x=ceStapel(TE.titel[e[3]]);if(x)s[x]=1;}});
+ var l=Object.keys(s).filter(function(x){return D.decks.some(function(d){return d.id===x;});});
+ return l.length?l:D.decks.map(function(d){return d.id;});
+}
 function allePruef(){
  var l=(TE.pruefungen||[]).map(function(p){return {d:p.datum,t:p.thema,quelle:'MyIKE'};})
-  .concat(eigenePruef().map(function(p,i){return {d:p.d,t:p.t,quelle:'eigen',i:i};}));
+  .concat(eigenePruef().map(function(p,i){return {d:p.d,t:p.t,s:p.s,quelle:'eigen',i:i};}));
  /* Klausuren, die im Stundenplan stehen */
  var gesehen={};TE.termine.forEach(function(e){var t=TE.titel[e[3]];if(/klausur|prüfung/i.test(t)&&!gesehen[e[0]]){gesehen[e[0]]=1;l.push({d:e[0],t:'Laut Stundenplan: '+t.replace(/^CE[\s.\d]+[A-D]?\s*/,''),quelle:'plan'});}});
  return l.filter(function(p){return tagNr(p.d)>=heute();}).sort(function(a,b){return a.d.localeCompare(b.d);});
@@ -795,8 +836,14 @@ function allePruef(){
 function warnText(tage){return tage===0?'Heute':tage===1?'Morgen':'In '+tage+' Tagen';}
 function baueTermine(){
  var h=heute(), pl=allePruef(), bald=pl.filter(function(p){return tagNr(p.d)-h<=7;});
- $('warnung').innerHTML=bald.map(function(p){var n=tagNr(p.d)-h;
-  return '<div class="flaeche" style="border:2px solid var(--gelb);background:rgba(255,196,0,.12);margin-top:12px"><b style="color:var(--gelb)">⚠️ Achtung: '+warnText(n)+' '+(p.quelle==='plan'?'Klausuren möglich':'Prüfung')+'!</b><div class="klein-grau" style="margin-top:4px">'+esc(datumText(p.d))+' · '+esc(p.t)+'</div></div>';}).join('');
+ var wissen=lies('lk_wissen_'+nutzer,{});
+ $('warnung').innerHTML=bald.map(function(p,i){var n=tagNr(p.d)-h,w=wissen[p.d+'|'+p.t],
+   st=pruefStapel(p).map(function(x){return deckName(x);}).join(', ');
+  return '<div class="flaeche" style="border:2px solid var(--gelb);background:rgba(255,196,0,.12);margin-top:12px"><b style="color:var(--gelb)">⚠️ Achtung: '+warnText(n)+' '+(p.quelle==='plan'?'Klausuren möglich':'Prüfung')+'!</b>'+
+   '<div class="klein-grau" style="margin-top:4px">'+esc(datumText(p.d))+' · '+esc(p.t)+'</div><div class="klein-grau" style="margin-top:4px">Themen: '+esc(st)+'</div>'+
+   (w?'<div style="margin-top:8px">Letzte Wissensstandsabfrage: <b style="color:'+(w.p>=85?'var(--gruen)':w.p>=60?'var(--gelb)':'var(--rot)')+'">'+w.p+' %</b> am '+esc(datumText(w.d))+'</div>':'')+
+   '<button class="haupt breit" data-wissen="'+i+'" style="margin-top:10px">🧠 Wissensstand prüfen (15 Fragen)</button></div>';}).join('');
+ alle('#warnung [data-wissen]').forEach(function(b){b.onclick=function(){starteWissen(bald[+b.dataset.wissen]);};});
  /* Stundenplan: heute oder der nächste Schultag */
  var tage=[...new Set(TE.termine.map(function(e){return e[0];}))].filter(function(d){return tagNr(d)>=h;}).sort();
  if(!tage.length){$('spTitel').textContent='Stundenplan';$('stundenplan').innerHTML='<p class="klein-grau">Noch kein neuer Stundenplan eingetragen (Stand '+esc(TE.stand||'')+').</p>';}
@@ -810,17 +857,50 @@ function baueTermine(){
   (p.quelle==='eigen'?'<button class="rand klein" data-weg="'+p.i+'" aria-label="Löschen">✕</button>':'')+'</div></div>';}).join(''):'<p class="klein-grau">Noch keine Prüfungstermine. Trage sie hier ein, dann warnt dich die App rechtzeitig.</p>';
  alle('#pruefListe [data-weg]').forEach(function(b){b.onclick=function(){var l=eigenePruef();l.splice(+b.dataset.weg,1);schreib('lk_pruef_'+nutzer,l);baueTermine();};});
  $('erinnerungBox').hidden=!('Notification' in window)||Notification.permission!=='default';
- meldeSystem(bald);
+ $('pStapel').innerHTML=D.decks.map(function(d){return '<button class="chip" data-s="'+d.id+'">'+esc(d.name)+'</button>';}).join('');
+ alle('#pStapel button').forEach(function(b){b.onclick=function(){b.classList.toggle('an');};});
+ meldeSystem(bald);glockeZeigen();
 }
 $('pSpeichern').onclick=function(){var d=$('pDatum').value,t=$('pThema').value.trim();if(!d||!t){alert('Bitte Datum und Thema eintragen.');return;}
- var l=eigenePruef();l.push({d:d,t:t});schreib('lk_pruef_'+nutzer,l);$('pThema').value='';baueTermine();};
-$('bErinnerung').onclick=function(){Notification.requestPermission().then(function(){baueTermine();});};
+ var s=alle('#pStapel button.an').map(function(b){return b.dataset.s;});
+ var l=eigenePruef();l.push({d:d,t:t,s:s});schreib('lk_pruef_'+nutzer,l);$('pThema').value='';baueTermine();};
+$('bErinnerung').onclick=function(){glockeOeffnen();};
+
+/* ================= Glocke: Hinweis und Einschalten der Erinnerungen ================= */
+function glockeZeigen(){
+ var b=$('bGlocke');b.hidden=!nutzer;
+ var an='Notification' in window&&Notification.permission==='granted';b.textContent=an?'🔔':'🔕';
+}
+function glockeOeffnen(){
+ var s=$('glockeStatus'),knopf=$('glockeAn');knopf.hidden=false;
+ if(!('Notification' in window)){s.textContent='Dieses Gerät erlaubt keine Meldungen aus dem Browser. Auf dem iPhone geht es erst, wenn die App über „Zum Home-Bildschirm“ installiert ist. Die Warnung auf der Startseite und die Wissensstandsabfrage funktionieren trotzdem.';knopf.hidden=true;}
+ else if(Notification.permission==='granted'){s.textContent='Die Erinnerungen sind eingeschaltet. ✓';knopf.hidden=true;}
+ else if(Notification.permission==='denied'){s.textContent='Die Meldungen sind im Browser gesperrt. Erlauben kannst du sie über das Schloss-Symbol neben der Adresse oder in den App-Einstellungen des Handys unter Benachrichtigungen.';knopf.hidden=true;}
+ else s.textContent='';
+ $('glockeNein').textContent=knopf.hidden?'Schließen':'Jetzt nicht';
+ $('glockeBox').hidden=false;
+}
+$('bGlocke').onclick=glockeOeffnen;
+$('glockeAn').onclick=function(){Notification.requestPermission().then(function(){schreib('lk_glocke_'+nutzer,'gefragt');$('glockeBox').hidden=true;baueTermine();
+ if(Notification.permission==='granted'){try{navigator.serviceWorker.getRegistration().then(function(r){var t={body:'Die Erinnerungen sind eingeschaltet. Wir melden uns vor deiner nächsten Prüfung.',icon:'icons/icon-192.png'};if(r)r.showNotification('Pflege Lernkarten',t);else new Notification('Pflege Lernkarten',t);});}catch(e){}}});};
+$('glockeNein').onclick=function(){schreib('lk_glocke_'+nutzer,'gefragt');$('glockeBox').hidden=true;};
+
+/* ================= Wissensstandsabfrage vor einer Prüfung ================= */
+function starteWissen(p){
+ var st=pruefStapel(p),pool=D.cards.filter(function(c){return st.indexOf(c.deck)!==-1;});
+ var liste=[],je=Math.max(1,Math.ceil(15/st.length));   /* aus jedem Stapel ungefähr gleich viele Fragen */
+ st.forEach(function(s){liste=liste.concat(mische(pool.filter(function(c){return c.deck===s;})).slice(0,je));});
+ liste=mische(liste).slice(0,15);
+ if(!liste.length){alert('Für diese Prüfung gibt es noch keine Karten.');return;}
+ wahl.deck='';starteRunde('pruefung',liste);runde.wissen={key:p.d+'|'+p.t,thema:p.t};
+ $('sMarke').textContent='Wissensstand · '+p.t;
+}
 /* Systemmeldung höchstens einmal am Tag, wenn eine Prüfung in drei Tagen oder früher ansteht */
 function meldeSystem(bald){
  if(!('Notification' in window)||Notification.permission!=='granted')return;
  var dringend=bald.filter(function(p){return tagNr(p.d)-heute()<=3;});if(!dringend.length)return;
  var key='lk_meldung_'+nutzer;if(lies(key,0)===heute())return;schreib(key,heute());
- var p=dringend[0],text=warnText(tagNr(p.d)-heute())+': '+p.t;
+ var p=dringend[0],text=warnText(tagNr(p.d)-heute())+': '+p.t+'. Öffne die App und prüfe deinen Wissensstand.';
  try{navigator.serviceWorker.getRegistration().then(function(r){if(r)r.showNotification('Achtung Prüfung!',{body:text,icon:'icons/icon-192.png'});else new Notification('Achtung Prüfung!',{body:text,icon:'icons/icon-192.png'});});}
  catch(e){try{new Notification('Achtung Prüfung!',{body:text});}catch(e2){}}
 }
