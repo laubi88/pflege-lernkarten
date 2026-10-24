@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>Pflege Lernkarten</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+ :root{--bg:#0b1220;--bg2:#101a2c;--fl:#141f33;--fl2:#1b2940;--fl3:#22344f;--rand:#2a3c58;--text:#eaf0f8;--grau:#94a5bc;--teal:#2ec4c6;--teal2:#1a9fa1;
+  --gelb:#ffc400;--gruen:#3ad07a;--rot:#ff6b6b;--lila:#8f8cff;--schatten:0 10px 30px rgba(0,0,0,.35)}
+ *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+ html,body{margin:0;color:var(--text);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;overflow-x:hidden;
+  background:radial-gradient(1200px 600px at 80% -10%,rgba(46,196,198,.16),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(143,140,255,.10),transparent 60%),var(--bg);background-attachment:fixed;min-height:100vh}
+ main{max-width:640px;margin:0 auto;padding:16px 16px 110px}
+ h1{font-size:1.5rem;margin:0;letter-spacing:.2px} h2{font-size:1.05rem;margin:22px 0 10px;color:var(--grau);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:.82rem}
+ h3{margin:0 0 6px;font-size:1.1rem}
+ p{line-height:1.5;margin:.4em 0}
+ .klein-grau{color:var(--grau);font-size:.9rem}
+ .kopfzeile{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+ .kopfzeile img{width:44px;height:44px;border-radius:14px;box-shadow:0 0 0 2px rgba(46,196,198,.4)}
+ .kopfzeile .rechts{margin-left:auto}
+ .flaeche{background:linear-gradient(180deg,var(--fl),var(--bg2));border:1px solid var(--rand);border-radius:20px;padding:18px;margin-top:12px;box-shadow:var(--schatten)}
+ .held{background:linear-gradient(135deg,rgba(46,196,198,.22),rgba(143,140,255,.14) 70%),var(--fl);border-color:rgba(46,196,198,.35)}
+ .reihe{display:flex;gap:12px;align-items:center}
+ .zwischen{justify-content:space-between}
+ .gitter2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+ .gitter3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+ .kachel{background:var(--fl2);border:1px solid var(--rand);border-radius:16px;padding:12px;text-align:center}
+ .kachel b{display:block;font-size:1.5rem;color:var(--teal)} .kachel span{color:var(--grau);font-size:.8rem}
+ button{font:inherit;font-weight:700;border:0;border-radius:14px;padding:12px 16px;cursor:pointer;color:var(--text);background:var(--fl3);transition:transform .08s,filter .15s}
+ button:active{transform:scale(.97)} button:disabled{opacity:.4;cursor:default;transform:none}
+ .haupt{background:linear-gradient(135deg,var(--teal),var(--teal2));color:#04202a;box-shadow:0 6px 18px rgba(46,196,198,.25)}
+ .gelb{background:var(--gelb);color:#1d1600} .gruen{background:var(--gruen);color:#062814} .rot{background:var(--rot);color:#2a0606}
+ .rand{background:transparent;border:1px solid var(--rand)}
+ .breit{width:100%;padding:15px;font-size:1.05rem}
+ .klein{padding:7px 12px;font-size:.88rem;border-radius:11px}
+ .knoepfe{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+ input,select{font:inherit;width:100%;padding:12px;border-radius:12px;border:1px solid var(--rand);background:var(--fl2);color:var(--text);margin-top:6px}
+ label{display:block;margin-top:12px;color:var(--grau);font-size:.95rem}
+ label.haken{display:flex;gap:8px;align-items:center} label.haken input{width:auto;margin:0}
+ .fehler{color:var(--rot);min-height:1.2em;margin-top:8px}
+ .hinweis{font-size:.85rem;color:var(--grau);line-height:1.45;margin-top:16px}
+ .chips{display:flex;flex-wrap:wrap;gap:8px}
+ .chip{background:var(--fl2);border:1px solid var(--rand);color:var(--text);border-radius:99px;padding:8px 13px;font-weight:600;font-size:.9rem}
+ .chip.an{background:var(--teal);border-color:var(--teal);color:#04202a}
+ .marke{display:inline-block;background:rgba(46,196,198,.15);color:var(--teal);border-radius:99px;padding:3px 11px;font-size:.8rem;font-weight:700}
+ /* Ring */
+ .ring{--p:0;width:92px;height:92px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:conic-gradient(var(--teal) calc(var(--p)*1%),rgba(255,255,255,.08) 0)}
+ .ring>div{width:72px;height:72px;border-radius:50%;background:var(--fl);display:grid;place-items:center;text-align:center;font-weight:800;font-size:1.15rem;line-height:1.05}
+ .ring small{display:block;font-size:.62rem;color:var(--grau);font-weight:600}
+ /* Balken */
+ .balken{height:10px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;display:flex}
+ .balken i{display:block;height:100%}
+ .b-sicher{background:var(--teal)} .b-lernt{background:var(--lila)} .b-neu{background:transparent}
+ .legende{display:flex;gap:14px;font-size:.8rem;color:var(--grau);margin-top:8px}
+ .legende i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+ .woche{display:flex;align-items:flex-end;gap:8px;height:90px;margin-top:8px}
+ .woche div{flex:1;text-align:center;font-size:.72rem;color:var(--grau)}
+ .woche div i{display:block;background:linear-gradient(180deg,var(--teal),var(--teal2));border-radius:7px 7px 3px 3px;margin-bottom:5px;min-height:3px}
+ /* Lernarten */
+ .art{display:flex;gap:14px;align-items:center;text-align:left;width:100%;padding:15px;background:var(--fl2);border:1px solid var(--rand);border-radius:18px;margin-top:10px}
+ .art .sym{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:1.45rem;flex:none;background:rgba(46,196,198,.15)}
+ .art small{display:block;color:var(--grau);font-weight:400;margin-top:3px;line-height:1.35}
+ /* Abfrage */
+ .fortschritt{height:6px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin:10px 0 4px}
+ .fortschritt i{display:block;height:100%;background:var(--teal);transition:width .3s}
+ .frage{font-size:1.32rem;font-weight:750;margin:6px 0 12px;line-height:1.35}
+ .status{display:flex;align-items:center;gap:10px;font-weight:600;padding:12px 14px;border-radius:14px;background:var(--fl2);margin:12px 0}
+ .punkt{width:12px;height:12px;border-radius:50%;background:var(--grau);flex:none}
+ .status.spricht .punkt{background:var(--teal);animation:puls 1s infinite}
+ .status.hoert .punkt{background:var(--rot);animation:puls .8s infinite}
+ @keyframes puls{50%{transform:scale(1.6);opacity:.5}}
+ .gehoert{min-height:2.6em;padding:10px 12px;border:2px dashed var(--rand);border-radius:14px;font-style:italic;overflow-wrap:anywhere}
+ .ergebnis{margin-top:14px;padding:14px;border-radius:14px;display:none;animation:rein .25s}
+ .ergebnis.richtig{display:block;background:rgba(58,208,122,.12);border:2px solid var(--gruen)}
+ .ergebnis.falsch{display:block;background:rgba(255,107,107,.10);border:2px solid var(--rot)}
+ .ergebnis.neutral{display:block;background:var(--fl2);border:2px solid var(--rand)}
+ @keyframes rein{from{opacity:0;transform:translateY(6px)}}
+ .kw{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+ .kw span{padding:3px 9px;border-radius:99px;font-size:.82rem;background:var(--fl3);color:var(--grau)}
+ .kw span.ok{background:var(--gruen);color:#062814}
+ .antwort{white-space:pre-line;line-height:1.5;margin-top:8px}
+ .tippen{display:flex;gap:8px;margin-top:10px}.tippen input{flex:1;min-width:0;margin:0}
+ .fehlt{font-size:.82rem;color:var(--gelb);margin-top:6px;min-height:1em}
+ /* Karteikarte */
+ .karte3d{perspective:1200px;margin-top:10px}
+ .karte3d .innen{position:relative;min-height:300px;transition:transform .5s;transform-style:preserve-3d}
+ .karte3d.offen .innen{transform:rotateY(180deg)}
+ .seite{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;padding:22px;border:1px solid var(--rand);
+  background:linear-gradient(160deg,var(--fl2),var(--fl));box-shadow:var(--schatten);display:flex;flex-direction:column;overflow:auto}
+ .seite.hinten{transform:rotateY(180deg);background:linear-gradient(160deg,#16303a,var(--fl))}
+ .seite .frage{margin:auto 0}
+ .tipp-unten{color:var(--grau);font-size:.85rem;text-align:center;margin-top:12px}
+ /* Hören */
+ .grossknopf{width:92px;height:92px;border-radius:50%;font-size:2rem;display:grid;place-items:center;margin:8px auto}
+ .countdown{font-size:2.4rem;font-weight:800;color:var(--gelb);text-align:center;min-height:1.3em}
+ /* Vokabeln */
+ .optionen{display:grid;gap:10px;margin-top:12px}
+ .optionen button{text-align:left;background:var(--fl2);border:1px solid var(--rand);font-weight:600;padding:14px}
+ .optionen button.ok{background:rgba(58,208,122,.2);border-color:var(--gruen)}
+ .optionen button.nein{background:rgba(255,107,107,.18);border-color:var(--rot)}
+ .fachwort{font-size:2rem;font-weight:800;color:var(--teal);margin:6px 0 2px;overflow-wrap:anywhere}
+ .vok{border-bottom:1px solid var(--rand);padding:12px 2px}
+ .vok:last-child{border:0}
+ .vok .oben{display:flex;gap:10px;align-items:center;justify-content:space-between}
+ .vok b{color:var(--teal);font-size:1.05rem}
+ .vok .detail{color:var(--grau);font-size:.9rem;margin-top:4px;line-height:1.45}
+ .vok .detail em{color:var(--text);font-style:normal}
+ .rund{width:40px;height:40px;border-radius:50%;padding:0;flex:none;background:rgba(46,196,198,.15);color:var(--teal)}
+ /* Navigation */
+ nav{position:fixed;left:0;right:0;bottom:0;background:rgba(11,18,32,.92);backdrop-filter:blur(10px);border-top:1px solid var(--rand);
+  display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:5}
+ nav div{display:flex;max-width:640px;width:100%;justify-content:space-around}
+ nav button{background:none;color:var(--grau);font-weight:600;font-size:.74rem;padding:6px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:70px}
+ nav button span{font-size:1.3rem;line-height:1}
+ nav button.an{color:var(--teal)}
+ .konfetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9}
+ .konfetti i{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;animation:fall 1.8s ease-in forwards}
+ @keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.8}}
+ [hidden]{display:none!important}
+ @media (max-width:380px){.gitter3{grid-template-columns:1fr 1fr 1fr;gap:6px}.kachel b{font-size:1.25rem}}
+</style>
+</head>
+<body>
+<main>
+ <div class="kopfzeile"><img src="icons/icon-192.png" alt=""><div><h1>Pflege Lernkarten</h1><div class="klein-grau" id="hallo">Lernen mit Valentino</div></div>
+  <button class="rand klein rechts" id="bAbmelden" hidden>Abmelden</button></div>
+
+ <!-- ===== Anmeldung ===== -->
+ <section id="vAnmelden" hidden>
+  <div class="flaeche held">
+   <h3>Willkommen</h3>
+   <p class="klein-grau">Valentino fragt, du antwortest laut. Die App merkt sich, was schon sitzt, und fragt schwierige Karten öfter.</p>
+  </div>
+  <div class="flaeche">
+   <div class="chips"><button class="chip an" id="tabLogin">Anmelden</button><button class="chip" id="tabNeu">Neu registrieren</button></div>
+   <label>E-Mail<input id="email" type="email" autocomplete="email" placeholder="name@beispiel.de"></label>
+   <label>Passwort<input id="pass" type="password" autocomplete="current-password" placeholder="mindestens 6 Zeichen"></label>
+   <label id="lName" hidden>Vorname (für die Begrüßung)<input id="vorname" autocomplete="given-name" placeholder="zum Beispiel Ewelina"></label>
+   <label id="lCode" hidden>Klassen-Code<input id="code" autocomplete="off" placeholder="von deiner Lehrkraft oder Ewelina"></label>
+   <button class="haupt breit" id="bLogin" style="margin-top:16px">Anmelden</button>
+   <div class="fehler" id="loginFehler"></div>
+  </div>
+  <p class="hinweis">Die Anmeldung und dein Lernstand gelten nur auf diesem Gerät.</p>
+ </section>
+
+ <!-- ===== Heute ===== -->
+ <section id="vHeute" hidden>
+  <div class="flaeche held">
+   <div class="reihe">
+    <div class="ring" id="ringZiel"><div><span id="zielZahl">0</span><small id="zielText">von 20</small></div></div>
+    <div style="flex:1">
+     <h3 id="heuteTitel">Heute fällig</h3>
+     <p class="klein-grau" id="heuteText"></p>
+     <button class="haupt breit" id="bHeute" style="margin-top:8px">▶ Lernrunde starten</button>
+    </div>
+   </div>
+  </div>
+  <div class="gitter3" style="margin-top:12px">
+   <div class="kachel"><b id="kSerie">0</b><span>Tage in Folge</span></div>
+   <div class="kachel"><b id="kSicher">0</b><span>Karten sicher</span></div>
+   <div class="kachel"><b id="kVok">0</b><span>Fachwörter sicher</span></div>
+  </div>
+  <h2>Tipp zum Lernen</h2>
+  <div class="flaeche" style="margin-top:0"><p id="tipp"></p></div>
+  <h2>Deine Stapel</h2>
+  <div id="stapelUebersicht"></div>
+ </section>
+
+ <!-- ===== Lernen: Art und Stapel wählen ===== -->
+ <section id="vLernen" hidden>
+  <h2 style="margin-top:4px">Stapel</h2>
+  <div class="chips" id="stapelChips"></div>
+  <h2>Welche Karten</h2>
+  <div class="chips" id="auswahlChips">
+   <button class="chip an" data-a="faellig">Fällige und neue</button><button class="chip" data-a="fehler">Nur Fehlerkarten</button>
+   <button class="chip" data-a="neu">Nur neue</button><button class="chip" data-a="alle">Alle gemischt</button></div>
+  <h2>Rundengröße</h2>
+  <div class="chips" id="groesseChips"><button class="chip" data-g="10">10</button><button class="chip an" data-g="20">20</button><button class="chip" data-g="40">40</button><button class="chip" data-g="999">alle</button></div>
+  <h2>Lernart</h2>
+  <button class="art" data-m="sprechen"><span class="sym">🎙️</span><span><b>Sprechen mit Valentino</b><small>Valentino fragt, du antwortest laut und sagst „fertig“. Die App prüft und erklärt.</small></span></button>
+  <button class="art" data-m="karte"><span class="sym">🃏</span><span><b>Karteikarte</b><small>Erst selbst überlegen, dann umdrehen und ehrlich bewerten. Leise, auch in der Bahn.</small></span></button>
+  <button class="art" data-m="hoeren"><span class="sym">🎧</span><span><b>Hörmodus</b><small>Wie ein Hörbuch: Frage, Bedenkzeit, Antwort. Ohne Hände, zum Beispiel unterwegs.</small></span></button>
+  <button class="art" data-m="pruefung"><span class="sym">📝</span><span><b>Prüfung üben</b><small>Wie im Test: keine Hilfe, Ergebnis erst am Ende.</small></span></button>
+  <label class="haken" style="margin-top:16px"><input type="checkbox" id="frei" checked> Freihändig: nach der Auswertung automatisch weiter</label>
+  <div class="fehler" id="lernFehler"></div>
+ </section>
+
+ <!-- ===== Sprechen und Prüfung ===== -->
+ <section id="vSprechen" hidden>
+  <div class="reihe zwischen"><span class="marke" id="sMarke"></span><span class="klein-grau" id="sZaehler"></span></div>
+  <div class="fortschritt"><i id="sBalken" style="width:0"></i></div>
+  <div class="flaeche">
+   <div class="frage" id="sFrage"></div>
+   <div class="status" id="status"><span class="punkt"></span><span id="statusText">Bereit</span></div>
+   <div class="gehoert" id="gehoert">Hier erscheint, was du sagst.</div>
+   <div class="tippen"><input id="tippfeld" placeholder="Ohne Mikrofon: Antwort hier tippen"><button class="rand" id="bTippen">Prüfen</button></div>
+   <div class="fehlt" id="fehlt"></div>
+   <div class="ergebnis" id="ergebnis"></div>
+   <div class="knoepfe">
+    <button class="haupt" id="bStart">▶ Frage starten</button>
+    <button class="gelb" id="bFertig" disabled>Fertig</button>
+    <button id="bWeiter" disabled>Weiter ▶</button>
+   </div>
+  </div>
+  <div class="knoepfe"><button class="rand klein" data-zurueck>◀ Runde beenden</button></div>
+ </section>
+
+ <!-- ===== Karteikarte ===== -->
+ <section id="vKarte" hidden>
+  <div class="reihe zwischen"><span class="marke" id="kMarke"></span><span class="klein-grau" id="kZaehler"></span></div>
+  <div class="fortschritt"><i id="kBalken" style="width:0"></i></div>
+  <div class="karte3d" id="karte3d"><div class="innen">
+   <div class="seite"><span class="klein-grau">Frage</span><div class="frage" id="kFrage"></div><div class="tipp-unten">Überlege die Antwort, dann tippe auf die Karte.</div></div>
+   <div class="seite hinten"><span class="klein-grau">Antwort</span><div class="antwort" id="kAntwort" style="font-size:1.05rem"></div></div>
+  </div></div>
+  <div class="knoepfe" id="kVorne"><button class="haupt breit" id="bUmdrehen">Karte umdrehen</button><button class="rand" id="bVorlesen">🔊 Frage vorlesen</button></div>
+  <div id="kHinten" hidden>
+   <div class="knoepfe"><button class="rand" id="bErklaerung">🔊 Erklärung anhören</button></div>
+   <p class="klein-grau" style="margin-top:14px">Wie gut wusstest du es?</p>
+   <div class="gitter3"><button class="rot" data-b="0">Nicht gewusst</button><button class="gelb" data-b="1">Teilweise</button><button class="gruen" data-b="2">Gewusst</button></div>
+  </div>
+  <div class="knoepfe"><button class="rand klein" data-zurueck>◀ Runde beenden</button></div>
+ </section>
+
+ <!-- ===== Hörmodus ===== -->
+ <section id="vHoeren" hidden>
+  <div class="reihe zwischen"><span class="marke" id="hMarke"></span><span class="klein-grau" id="hZaehler"></span></div>
+  <div class="fortschritt"><i id="hBalken" style="width:0"></i></div>
+  <div class="flaeche" style="text-align:center">
+   <div class="frage" id="hFrage"></div>
+   <div class="countdown" id="hCountdown"></div>
+   <div class="klein-grau" id="hStatus">Tippe auf Abspielen.</div>
+   <button class="haupt grossknopf" id="bHPlay">▶</button>
+   <div class="knoepfe" style="justify-content:center"><button class="rand" id="bHZurueck">⏮ Zurück</button><button class="rand" id="bHWeiter">Weiter ⏭</button></div>
+   <label>Bedenkzeit
+    <select id="hPause"><option value="4">4 Sekunden</option><option value="7" selected>7 Sekunden</option><option value="12">12 Sekunden</option></select></label>
+  </div>
+  <div class="knoepfe"><button class="rand klein" data-zurueck>◀ Hörmodus beenden</button></div>
+ </section>
+
+ <!-- ===== Rundenende ===== -->
+ <section id="vEnde" hidden>
+  <div class="flaeche held" style="text-align:center">
+   <div class="ring" id="eRing" style="margin:6px auto 10px;width:120px;height:120px"><div style="width:96px;height:96px"><span id="eProzent">0</span><small>richtig</small></div></div>
+   <h3 id="eTitel">Runde geschafft</h3>
+   <p class="klein-grau" id="eText"></p>
+  </div>
+  <div id="eFehlerBox" hidden><h2>Diese Karten üben wir noch</h2><div class="flaeche" style="margin-top:0" id="eFehler"></div></div>
+  <div class="knoepfe"><button class="haupt" id="bEFehler" hidden>Fehler nochmal üben</button><button class="rand" id="bEStart">Zur Startseite</button></div>
+ </section>
+
+ <!-- ===== Fachwörter ===== -->
+ <section id="vVokabeln" hidden>
+  <div class="flaeche held">
+   <h3>Fachwörter verstehen</h3>
+   <p class="klein-grau" id="vokInfo">Griechisch und Lateinisch, übersetzt in Alltagsdeutsch.</p>
+   <div class="balken" style="margin-top:10px" id="vokBalken"></div>
+  </div>
+  <div class="gitter2" style="margin-top:12px">
+   <button class="haupt" id="bVokVor">Fachwort ➜ Alltag</button>
+   <button class="haupt" id="bVokRueck">Alltag ➜ Fachwort</button>
+  </div>
+  <h2>Alle Fachwörter</h2>
+  <input id="vokSuche" placeholder="Suchen, zum Beispiel Herz oder Hypo">
+  <div class="flaeche" id="vokListe" style="padding:4px 14px"></div>
+ </section>
+
+ <!-- ===== Fachwort-Quiz ===== -->
+ <section id="vVokQuiz" hidden>
+  <div class="reihe zwischen"><span class="marke" id="qMarke">Fachwörter</span><span class="klein-grau" id="qZaehler"></span></div>
+  <div class="fortschritt"><i id="qBalken" style="width:0"></i></div>
+  <div class="flaeche">
+   <div class="klein-grau" id="qAufgabe"></div>
+   <div class="fachwort" id="qWort"></div>
+   <div class="klein-grau" id="qHerkunft"></div>
+   <div class="optionen" id="qOptionen"></div>
+   <div class="ergebnis neutral" id="qInfo" hidden></div>
+   <div class="knoepfe"><button class="rand" id="bQHoeren">🔊 Anhören</button><button class="haupt" id="bQWeiter" hidden>Weiter ▶</button></div>
+  </div>
+  <div class="knoepfe"><button class="rand klein" data-zurueck="vVokabeln">◀ Quiz beenden</button></div>
+ </section>
+
+ <!-- ===== Fortschritt ===== -->
+ <section id="vFortschritt" hidden>
+  <div class="flaeche held">
+   <div class="reihe">
+    <div class="ring" id="fRing"><div><span id="fProzent">0</span><small>sicher</small></div></div>
+    <div><h3>Dein Lernstand</h3><p class="klein-grau" id="fText"></p></div>
+   </div>
+  </div>
+  <h2>Letzte sieben Tage</h2>
+  <div class="flaeche" style="margin-top:0"><div class="woche" id="fWoche"></div></div>
+  <h2>Stapel</h2>
+  <div class="flaeche" style="margin-top:0" id="fStapel"></div>
+  <h2>Schwierigste Karten</h2>
+  <div class="flaeche" style="margin-top:0" id="fSchwer"></div>
+  <h2>Einstellungen</h2>
+  <div class="flaeche" style="margin-top:0">
+   <label>Tagesziel
+    <select id="fZiel"><option value="10">10 Karten am Tag</option><option value="20">20 Karten am Tag</option><option value="30">30 Karten am Tag</option><option value="50">50 Karten am Tag</option></select></label>
+   <div class="knoepfe"><button class="rand klein" id="bReset">Lernstand zurücksetzen</button></div>
+  </div>
+  <p class="hinweis">So funktioniert das Lernsystem: Jede Karte liegt in einem von fünf Fächern. Richtig beantwortet wandert sie ein Fach weiter und kommt später wieder:
+   nach einem, zwei, vier, sieben und vierzehn Tagen. Falsch beantwortet geht sie zurück ins erste Fach und kommt morgen wieder.
+   Ab Fach vier gilt eine Karte als sicher.</p>
+ </section>
+</main>
+
+<nav id="nav" hidden><div>
+ <button data-nav="vHeute" class="an"><span>🏠</span>Heute</button>
+ <button data-nav="vLernen"><span>🎓</span>Lernen</button>
+ <button data-nav="vVokabeln"><span>📖</span>Fachwörter</button>
+ <button data-nav="vFortschritt"><span>📈</span>Fortschritt</button>
+</div></nav>
+<audio id="ton" preload="auto"></audio>
+<script src="karten.js"></script>
+<script src="vokabeln.js"></script>
+<script>
+'use strict';
+var D=window.LERNDATEN, VOK=window.VOKABELN||[], SCHWELLE=0.6;
+var ABSTAND=[0,1,2,4,7,14];           /* Tage bis zur nächsten Wiederholung je Fach */
+var CODE_HASH='a764b1f16edbaebc3c8bacc4a83b68cdd580bdfcc1367d620051e41066b5d75e';
+var TIPPS=[
+ 'Laut antworten hilft: Was du selbst aussprichst, behältst du besser als nur Gelesenes.',
+ 'Kurze Runden an vielen Tagen bringen mehr als eine lange Runde am Wochenende.',
+ 'Erst selbst überlegen, dann nachsehen. Genau das Abrufen trainiert dein Gedächtnis.',
+ 'Fehler sind gut: Die Karte kommt bald wieder, so lange, bis sie sitzt.',
+ 'Erkläre ein Fachwort in eigenen Worten, dann hast du es wirklich verstanden.',
+ 'Mische die Stapel. Wer Themen abwechselt, kann sie in der Prüfung besser auseinanderhalten.',
+ 'Schlaf festigt Gelerntes. Eine kurze Runde am Abend und eine am Morgen wirken gut zusammen.'];
+function $(x){return document.getElementById(x);}
+function alle(s,el){return Array.prototype.slice.call((el||document).querySelectorAll(s));}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function norm(s){return String(s).toLowerCase().replace(/ß/g,'ss').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+function parseKw(k){return (k||'').split(';').map(function(x){return x.trim();}).filter(Boolean).map(function(x){var p=x.split('|');return {label:p[0].trim(),stems:(p[1]||p[0]).split('/').map(norm).filter(Boolean)};});}
+D.cards.forEach(function(k){k.kwl=parseKw(k.kw);});
+var KARTE={};D.cards.forEach(function(k){KARTE[k.id]=k;});
+var VOKID={};VOK.forEach(function(v){VOKID[v.id]=v;});
+function deckName(id){var d=D.decks.find(function(x){return x.id===id;});return d?d.name:'Alle Stapel';}
+function lies(k,def){try{var v=JSON.parse(localStorage.getItem(k));return v==null?def:v;}catch(e){return def;}}
+function schreib(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+async function sha(t){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');}
+function heute(){var d=new Date();return Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000);}
+function mische(a){a=a.slice();for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1));var t=a[k];a[k]=a[j];a[j]=t;}return a;}
+
+/* ================= Anmeldung (nur auf diesem Gerät) ================= */
+var konten=lies('lk_konten',{}), namen=lies('lk_namen',{}), nutzer=lies('lk_nutzer',null), neu=false;
+function modus(n){neu=n;$('lCode').hidden=!n;$('lName').hidden=!n;$('bLogin').textContent=n?'Konto anlegen':'Anmelden';
+ $('tabNeu').classList.toggle('an',n);$('tabLogin').classList.toggle('an',!n);$('loginFehler').textContent='';}
+$('tabLogin').onclick=function(){modus(false);};$('tabNeu').onclick=function(){modus(true);};
+$('bLogin').onclick=async function(){
+ var m=$('email').value.trim().toLowerCase(), p=$('pass').value, f=$('loginFehler');
+ if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m)){f.textContent='Bitte eine gültige E-Mail-Adresse eingeben.';return;}
+ if(p.length<6){f.textContent='Das Passwort braucht mindestens 6 Zeichen.';return;}
+ var ph=await sha(m+'|'+p);
+ if(neu){
+  if(await sha($('code').value.trim().toUpperCase())!==CODE_HASH){f.textContent='Der Klassen-Code stimmt nicht.';return;}
+  if(konten[m]){f.textContent='Für diese E-Mail gibt es schon ein Konto. Bitte anmelden.';return;}
+  konten[m]=ph;schreib('lk_konten',konten);namen[m]=$('vorname').value.trim();schreib('lk_namen',namen);
+ }else if(konten[m]!==ph){f.textContent='E-Mail oder Passwort stimmt nicht.';return;}
+ nutzer=m;schreib('lk_nutzer',m);$('pass').value='';ladeStand();zeige('vHeute');
+};
+$('bAbmelden').onclick=function(){stopAlles();nutzer=null;schreib('lk_nutzer',null);modus(false);zeige('vAnmelden');};
+
+/* ================= Lernstand je Nutzer (Lernkartei mit fünf Fächern) ================= */
+var stand;
+function standKey(){return 'lk_stand_'+nutzer;}
+function ladeStand(){
+ stand=lies(standKey(),null)||{k:{},v:{},tage:{},ziel:20};
+ var alt=lies('lk_fehler_'+nutzer,null);           /* Fehlerzähler aus der ersten App-Fassung übernehmen */
+ if(alt){Object.keys(alt).forEach(function(id){if(!stand.k[id])stand.k[id]={b:1,f:heute(),r:0,x:alt[id]};});localStorage.removeItem('lk_fehler_'+nutzer);speichern();}
+}
+function speichern(){schreib(standKey(),stand);}
+function eintrag(art,id){return stand[art][id];}
+/* ergebnis: 2 gewusst, 1 teilweise, 0 falsch */
+function bewerte(art,id,ergebnis){
+ var s=stand[art][id]||{b:0,f:0,r:0,x:0}, h=heute();
+ if(ergebnis===2){s.b=Math.min(5,s.b+1);s.r++;s.f=h+ABSTAND[s.b];}
+ else if(ergebnis===1){s.b=Math.max(1,s.b);s.f=h+1;}
+ else{s.b=1;s.x++;s.f=h+1;}
+ stand[art][id]=s;stand.tage[h]=(stand.tage[h]||0)+1;speichern();return s;
+}
+function istSicher(s){return s&&s.b>=4;}
+function faellig(s){return s&&s.f<=heute();}
+function serie(){var h=heute(),n=0;if(!stand.tage[h])h--;while(stand.tage[h]){n++;h--;}return n;}
+
+/* ================= Navigation ================= */
+var ANSICHTEN=['vAnmelden','vHeute','vLernen','vSprechen','vKarte','vHoeren','vEnde','vVokabeln','vVokQuiz','vFortschritt'];
+function zeige(v){
+ ANSICHTEN.forEach(function(n){$(n).hidden=(n!==v);});
+ $('bAbmelden').hidden=(v==='vAnmelden');$('nav').hidden=(v==='vAnmelden');
+ var navZiel={vSprechen:'vLernen',vKarte:'vLernen',vHoeren:'vLernen',vEnde:'vLernen',vVokQuiz:'vVokabeln'}[v]||v;
+ alle('nav button').forEach(function(b){b.classList.toggle('an',b.dataset.nav===navZiel);});
+ if(v==='vHeute')baueHeute();if(v==='vLernen')baueLernen();if(v==='vVokabeln')baueVokabeln();if(v==='vFortschritt')baueFortschritt();
+ if(nutzer){var n=namen[nutzer];$('hallo').textContent=n?'Hallo '+n+'!':'Lernen mit Valentino';}
+ window.scrollTo(0,0);
+}
+alle('nav button').forEach(function(b){b.onclick=function(){stopAlles();zeige(b.dataset.nav);};});
+alle('[data-zurueck]').forEach(function(b){b.onclick=function(){stopAlles();if(b.dataset.zurueck)zeige(b.dataset.zurueck);else if(runde&&runde.erg.length)zeigeEnde();else zeige('vLernen');};});
+
+/* ================= Startseite ================= */
+function stapelZahlen(deck){
+ var k=D.cards.filter(function(c){return !deck||c.deck===deck;}), z={gesamt:k.length,sicher:0,lernt:0,neu:0,faellig:0};
+ k.forEach(function(c){var s=eintrag('k',c.id);if(!s)z.neu++;else if(istSicher(s))z.sicher++;else z.lernt++;if(faellig(s))z.faellig++;});return z;
+}
+function balken(z){var g=z.gesamt||1;return '<div class="balken"><i class="b-sicher" style="width:'+(z.sicher/g*100)+'%"></i><i class="b-lernt" style="width:'+(z.lernt/g*100)+'%"></i></div>';}
+function baueHeute(){
+ var h=heute(), getan=stand.tage[h]||0, ziel=stand.ziel||20, z=stapelZahlen(null);
+ $('zielZahl').textContent=getan;$('zielText').textContent='von '+ziel;
+ $('ringZiel').style.setProperty('--p',Math.min(100,getan/ziel*100));
+ if(z.faellig){$('heuteTitel').textContent=z.faellig+' Karten zum Wiederholen';$('heuteText').textContent='Dazu kommen neue Karten, bis die Runde voll ist.';}
+ else if(z.neu){$('heuteTitel').textContent='Nichts zu wiederholen';$('heuteText').textContent=z.neu+' neue Karten warten auf dich.';}
+ else{$('heuteTitel').textContent='Alles erledigt';$('heuteText').textContent='Heute ist nichts fällig. Du kannst trotzdem frei üben.';}
+ if(getan>=ziel)$('heuteText').textContent='Tagesziel geschafft! '+$('heuteText').textContent;
+ $('kSerie').textContent=serie();$('kSicher').textContent=z.sicher;
+ $('kVok').textContent=VOK.filter(function(v){return istSicher(eintrag('v',v.id));}).length;
+ $('tipp').textContent=TIPPS[h%TIPPS.length];
+ $('stapelUebersicht').innerHTML=D.decks.map(function(d){var s=stapelZahlen(d.id);
+  return '<button class="art" data-deck="'+d.id+'" style="display:block"><div class="reihe zwischen"><b>'+esc(d.name)+'</b><span class="marke">'+(s.faellig?s.faellig+' fällig':s.sicher+' von '+s.gesamt+' sicher')+'</span></div>'+
+   '<small>'+esc(d.sub)+'</small><div style="margin-top:10px">'+balken(s)+'</div></button>';}).join('')+
+  '<div class="legende"><span><i style="background:var(--teal)"></i>sicher</span><span><i style="background:var(--lila)"></i>wird gelernt</span><span><i style="background:rgba(255,255,255,.12)"></i>neu</span></div>';
+ alle('#stapelUebersicht [data-deck]').forEach(function(b){b.onclick=function(){wahl.deck=b.dataset.deck;zeige('vLernen');};});
+}
+$('bHeute').onclick=function(){wahl.deck='';wahl.auswahl='faellig';starteRunde('sprechen');};
+
+/* ================= Lernen: Auswahl ================= */
+var wahl={deck:'',auswahl:'faellig',groesse:20};
+function baueLernen(){
+ $('stapelChips').innerHTML=[{id:'',name:'Alle Stapel'}].concat(D.decks).map(function(d){
+  var z=stapelZahlen(d.id||null);return '<button class="chip'+(wahl.deck===d.id?' an':'')+'" data-d="'+d.id+'">'+esc(d.name)+(z.faellig?' · '+z.faellig:'')+'</button>';}).join('');
+ alle('#stapelChips button').forEach(function(b){b.onclick=function(){wahl.deck=b.dataset.d;baueLernen();};});
+ alle('#auswahlChips button').forEach(function(b){b.classList.toggle('an',b.dataset.a===wahl.auswahl);b.onclick=function(){wahl.auswahl=b.dataset.a;baueLernen();};});
+ alle('#groesseChips button').forEach(function(b){b.classList.toggle('an',+b.dataset.g===wahl.groesse);b.onclick=function(){wahl.groesse=+b.dataset.g;baueLernen();};});
+ $('lernFehler').textContent='';
+}
+alle('#vLernen .art').forEach(function(b){b.onclick=function(){starteRunde(b.dataset.m);};});
+function waehleKarten(){
+ var pool=D.cards.filter(function(c){return !wahl.deck||c.deck===wahl.deck;}), n=wahl.groesse, a=wahl.auswahl;
+ if(a==='fehler')return mische(pool.filter(function(c){var s=eintrag('k',c.id);return s&&s.x>0;})).slice(0,n);
+ if(a==='neu')return pool.filter(function(c){return !eintrag('k',c.id);}).slice(0,n);
+ if(a==='alle')return mische(pool).slice(0,n);
+ var f=pool.filter(function(c){return faellig(eintrag('k',c.id));}).sort(function(x,y){return eintrag('k',x.id).b-eintrag('k',y.id).b;});
+ var nu=pool.filter(function(c){return !eintrag('k',c.id);});
+ return mische(f.slice(0,n).concat(nu.slice(0,Math.max(0,n-f.length))));
+}
+
+/* ================= Runde (gemeinsam für alle Lernarten) ================= */
+var runde=null;
+function starteRunde(m,karten){
+ var liste=karten||waehleKarten();
+ if(!liste.length){$('lernFehler').textContent='Für diese Auswahl gibt es gerade keine Karten. Wähle „Alle gemischt“ oder einen anderen Stapel.';if($('vLernen').hidden)zeige('vLernen');return;}
+ runde={modus:m,liste:liste,i:0,erg:[],nochmal:{}};
+ if(m==='pruefung')runde.liste=liste.slice(0,Math.min(liste.length,15));
+ var titel={sprechen:'Sprechen',karte:'Karteikarte',hoeren:'Hörmodus',pruefung:'Prüfung'}[m]+' · '+deckName(wahl.deck);
+ if(m==='sprechen'||m==='pruefung'){$('sMarke').textContent=titel;zeige('vSprechen');zeigeSprechen();}
+ else if(m==='karte'){$('kMarke').textContent=titel;zeige('vKarte');zeigeKarte();}
+ else{$('hMarke').textContent=titel;zeige('vHoeren');zeigeHoeren();}
+}
+function rundeKopf(pre){var r=runde;$(pre+'Zaehler').textContent='Karte '+(r.i+1)+' von '+r.liste.length;$(pre+'Balken').style.width=(r.i/r.liste.length*100)+'%';}
+function merkeErgebnis(id,ok){
+ var e=runde.erg.find(function(x){return x.id===id;});
+ if(e){if(runde.nochmal[id]===1)return;e.ok=ok;}else runde.erg.push({id:id,ok:ok});
+ if(!ok&&runde.modus!=='pruefung'&&!runde.nochmal[id]){runde.nochmal[id]=1;runde.liste.push(KARTE[id]);}  /* falsche Karte kommt am Ende der Runde noch einmal */
+}
+function naechste(){
+ if(runde.i>=runde.liste.length-1){zeigeEnde();return false;}
+ runde.i++;return true;
+}
+function zeigeEnde(){
+ stopAlles();var r=runde, ok=r.erg.filter(function(x){return x.ok;}).length, n=r.erg.length, p=n?Math.round(ok/n*100):0;
+ $('eProzent').textContent=p+' %';$('eRing').style.setProperty('--p',p);
+ $('eTitel').textContent=r.modus==='pruefung'?(p>=90?'Sehr gut!':p>=75?'Gut gemacht!':p>=50?'Bestanden, aber übe weiter':'Noch nicht sicher'):(p>=80?'Stark!':p>=50?'Gute Runde':'Dranbleiben lohnt sich');
+ $('eText').textContent=ok+' von '+n+' Karten beim ersten Versuch richtig.'+(r.modus!=='pruefung'&&ok<n?' Die falschen Karten kommen morgen wieder.':'');
+ var falsch=r.erg.filter(function(x){return !x.ok;}).map(function(x){return KARTE[x.id];});
+ $('eFehlerBox').hidden=!falsch.length;$('bEFehler').hidden=!falsch.length;
+ $('eFehler').innerHTML=falsch.map(function(k){return '<div class="vok"><b style="color:var(--text)">'+esc(k.q)+'</b><div class="detail antwort">'+esc(k.a)+'</div></div>';}).join('');
+ $('bEFehler').onclick=function(){starteRunde(r.modus==='pruefung'?'sprechen':r.modus,mische(falsch));};
+ zeige('vEnde');if(p>=80&&n>=5)konfetti();
+ if(r.modus!=='hoeren')spiele('G_Geschafft',true);
+}
+$('bEStart').onclick=function(){zeige('vHeute');};
+function konfetti(){var c=document.createElement('div');c.className='konfetti';var f=['#2ec4c6','#ffc400','#3ad07a','#8f8cff','#ffffff'];
+ for(var i=0;i<60;i++){var e=document.createElement('i');e.style.left=(Math.random()*100)+'%';e.style.background=f[i%5];e.style.animationDelay=(Math.random()*.6)+'s';c.appendChild(e);}
+ document.body.appendChild(c);setTimeout(function(){c.remove();},2800);}
+
+/* ================= Ton ================= */
+var ton=$('ton'), tonId=0;
+function status(art,text){$('status').className='status '+(art||'');$('statusText').textContent=text;}
+function spiele(datei,still){
+ var meine=++tonId;
+ return new Promise(function(fertig){
+  if(!still&&!$('vSprechen').hidden)status('spricht','Valentino spricht');
+  var erledigt=false;function ende(){if(!erledigt){erledigt=true;if(meine===tonId)fertig();}}
+  function fehlt(){if(meine===tonId&&!$('vSprechen').hidden)$('fehlt').textContent='Aufnahme fehlt: '+datei;setTimeout(ende,900);}
+  ton.onended=ende;ton.onerror=fehlt;ton.src='audio/'+datei+'.mp3';ton.play().catch(fehlt);
+ });
+}
+function stopTon(){tonId++;ton.pause();}
+function stopAlles(){stopTon();stopHoeren();clearTimeout(autoWeiter);hoerenStop();}
+
+/* ================= Spracherkennung bis „fertig“ ================= */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition, rec=null, hoert=false, gesagt='', vorher='';
+/* In der Android-App gibt es keine Web-Spracherkennung, dort übernimmt der Capacitor-Baustein SpeechRecognition */
+var NATIV=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()), NSR=NATIV?Capacitor.registerPlugin('SpeechRecognition'):null;
+var nAktuell='', nWache=null, nAus=0, nErlaubt=false;
+if(NSR){
+ NSR.addListener('partialResults',function(d){if(!hoert||!d.matches||!d.matches.length)return;nAktuell=d.matches[0];
+  gesagt=(vorher+' '+nAktuell).trim();$('gehoert').textContent=gesagt;
+  if(/\bfertig[.!]?\s*$/i.test(gesagt)){hoert=false;stopNativ();auswerten(gesagt);}});
+}
+function starteNativ(){nAktuell='';nAus=0;NSR.start({language:'de-DE',partialResults:true,popup:false,maxResults:1}).catch(function(){});}
+function stopNativ(){clearInterval(nWache);NSR.stop().catch(function(){});}
+/* Android beendet die Erkennung nach einer Sprechpause von selbst. Die Wache startet sie neu und hängt den Text an. */
+function wacheNativ(){clearInterval(nWache);nWache=setInterval(function(){if(!hoert){clearInterval(nWache);return;}
+ NSR.isListening().then(function(r){if(!hoert)return;if(r.listening){nAus=0;return;}
+  if(++nAus>=2){vorher=gesagt;starteNativ();}});},800);}
+async function zuhoerenNativ(){
+ if(!nErlaubt){var p=await NSR.requestPermissions().catch(function(){return {};});nErlaubt=p.speechRecognition==='granted';
+  if(!nErlaubt){status('','Mikrofon nicht erlaubt. Antwort unten tippen.');return;}}
+ hoert=true;status('hoert','Ich höre zu. Sag am Ende „fertig“.');starteNativ();wacheNativ();
+}
+function zuhoeren(){
+ gesagt='';vorher='';$('gehoert').textContent='…';$('bFertig').disabled=false;
+ if(NSR){zuhoerenNativ();return;}
+ if(!SR){status('','Keine Spracherkennung in diesem Browser. Antwort unten tippen.');return;}
+ hoert=true;status('hoert','Ich höre zu. Sag am Ende „fertig“.');starteRec();
+}
+function starteRec(){
+ try{rec=new SR();}catch(e){status('','Mikrofon nicht verfügbar. Antwort unten tippen.');return;}
+ rec.lang='de-DE';rec.continuous=true;rec.interimResults=true;
+ rec.onresult=function(ev){var t='';for(var i=0;i<ev.results.length;i++)t+=ev.results[i][0].transcript+' ';
+  gesagt=(vorher+' '+t).trim();$('gehoert').textContent=gesagt;
+  if(/\bfertig[.!]?\s*$/i.test(gesagt)){hoert=false;try{rec.stop();}catch(e){}auswerten(gesagt);}};
+ rec.onerror=function(ev){if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){hoert=false;status('','Mikrofon nicht erlaubt. Antwort unten tippen.');}};
+ rec.onend=function(){if(hoert){vorher=gesagt;starteRec();}};
+ try{rec.start();}catch(e){}
+}
+function stopHoeren(){var war=hoert;hoert=false;if(NSR){if(war)stopNativ();}else if(rec){try{rec.stop();}catch(e){}}$('bFertig').disabled=true;}
+
+/* ================= Lernart Sprechen und Prüfung ================= */
+var laeuft=false, autoWeiter=null, vorherStand=null;
+function zeigeSprechen(){
+ var k=runde.liste[runde.i], s=eintrag('k',k.id);stopTon();stopHoeren();rundeKopf('s');
+ $('sFrage').textContent=k.q;
+ if(runde.nochmal[k.id]===1&&runde.erg.find(function(x){return x.id===k.id;}))$('sZaehler').textContent+=' · zweiter Versuch';
+ else if(s&&s.x&&runde.modus!=='pruefung')$('sZaehler').textContent+=' · '+s.x+'-mal falsch';
+ $('ergebnis').className='ergebnis';$('gehoert').textContent='Hier erscheint, was du sagst.';$('fehlt').textContent='';
+ $('bWeiter').disabled=true;$('bStart').disabled=false;$('bStart').textContent='▶ Frage starten';status('','Bereit');
+}
+function starteFrage(){
+ laeuft=true;$('bStart').disabled=true;$('bWeiter').disabled=true;$('ergebnis').className='ergebnis';$('fehlt').textContent='';
+ var k=runde.liste[runde.i];
+ spiele(k.id+'_Frage').then(function(){return spiele('G_DuBistDran');}).then(zuhoeren);
+}
+function auswerten(text){
+ stopHoeren();
+ var antwort=String(text).replace(/\bfertig[.!]?\s*$/i,'').trim(), k=runde.liste[runde.i];
+ if(!norm(antwort)){spiele('G_NichtVerstanden').then(zuhoeren);return;}
+ var t=norm(antwort);
+ var treffer=k.kwl.map(function(w){return {label:w.label,ok:w.stems.some(function(s){return t.indexOf(s)!==-1;})};});
+ var anteil=treffer.length?treffer.filter(function(x){return x.ok;}).length/treffer.length:0, ok=anteil>=SCHWELLE;
+ var kw='<div class="kw">'+treffer.map(function(x){return '<span class="'+(x.ok?'ok':'')+'">'+(x.ok?'✓ ':'')+esc(x.label)+'</span>';}).join('')+'</div>';
+ vorherStand=JSON.stringify(eintrag('k',k.id)||null);
+ var s=bewerte('k',k.id,ok?2:0);merkeErgebnis(k.id,ok);
+ var e=$('ergebnis');
+ if(runde.modus==='pruefung'){
+  e.className='ergebnis neutral';e.innerHTML='<h3>Antwort gespeichert</h3><span class="klein-grau">Das Ergebnis siehst du am Ende der Prüfung.</span>';
+  abschluss(900);return;
+ }
+ if(ok){
+  e.className='ergebnis richtig';e.innerHTML='<h3>✓ Richtig</h3>'+Math.round(anteil*100)+' Prozent der Schlüsselwörter genannt.'+kw+
+   '<div class="klein-grau">Nächste Wiederholung in '+ABSTAND[s.b]+(ABSTAND[s.b]===1?' Tag':' Tagen')+'.</div>';
+  spiele(k.id+'_Richtig').then(function(){abschluss();});
+ }else{
+  var n=s.x;
+  e.className='ergebnis falsch';
+  e.innerHTML='<h3>Noch nicht ganz</h3>Diese Frage wurde jetzt '+n+'-mal falsch beantwortet. Sie kommt am Ende der Runde noch einmal.'+kw+
+   '<div class="antwort"><b>Richtige Antwort:</b>\n'+esc(k.a)+'</div><div class="knoepfe"><button class="rand klein" id="bDoch">Ich lag doch richtig</button></div>';
+  $('bDoch').onclick=dochRichtig;
+  spiele(n<=5?'G_Falsch_'+n:'G_Falsch_Mehr').then(function(){return spiele(k.id+'_Erklaerung');}).then(function(){abschluss();});
+ }
+}
+/* Spracherkennung hat sich verhört: Bewertung rückgängig machen und als richtig zählen */
+function dochRichtig(){
+ var k=runde.liste[runde.i];stopTon();clearTimeout(autoWeiter);
+ var alt=JSON.parse(vorherStand);if(alt)stand.k[k.id]=alt;else delete stand.k[k.id];
+ var h=heute();stand.tage[h]=Math.max(0,(stand.tage[h]||1)-1);
+ var s=bewerte('k',k.id,2);
+ if(runde.nochmal[k.id]===1&&runde.liste[runde.liste.length-1]===k&&runde.i!==runde.liste.length-1){runde.liste.pop();delete runde.nochmal[k.id];}
+ var e=runde.erg.find(function(x){return x.id===k.id;});if(e)e.ok=true;
+ $('ergebnis').className='ergebnis richtig';$('ergebnis').innerHTML='<h3>✓ Als richtig gezählt</h3><div class="antwort">'+esc(k.a)+'</div>';
+ abschluss();
+}
+function abschluss(ms){
+ laeuft=false;status('','Fertig mit dieser Karte');$('bWeiter').disabled=false;$('bStart').disabled=false;$('bStart').textContent='↻ Frage wiederholen';
+ if($('frei').checked||runde.modus==='pruefung'){clearTimeout(autoWeiter);autoWeiter=setTimeout(function(){if(!laeuft&&!$('vSprechen').hidden)weiterSprechen();},ms||2200);}
+}
+function weiterSprechen(){clearTimeout(autoWeiter);if(!naechste())return;zeigeSprechen();if($('frei').checked||runde.modus==='pruefung')starteFrage();}
+$('bStart').onclick=starteFrage;
+$('bFertig').onclick=function(){auswerten(gesagt||$('tippfeld').value);};
+$('bTippen').onclick=function(){var v=$('tippfeld').value;$('gehoert').textContent=v;$('tippfeld').value='';auswerten(v);};
+$('tippfeld').onkeydown=function(e){if(e.key==='Enter')$('bTippen').click();};
+$('bWeiter').onclick=weiterSprechen;
+
+/* ================= Lernart Karteikarte ================= */
+function zeigeKarte(){
+ var k=runde.liste[runde.i];stopTon();rundeKopf('k');
+ $('karte3d').classList.remove('offen');$('kFrage').textContent=k.q;
+ setTimeout(function(){$('kAntwort').textContent=k.a;},250);
+ $('kVorne').hidden=false;$('kHinten').hidden=true;
+}
+function umdrehen(){$('karte3d').classList.add('offen');$('kVorne').hidden=true;$('kHinten').hidden=false;$('kAntwort').textContent=runde.liste[runde.i].a;}
+$('karte3d').onclick=function(){if(!$('karte3d').classList.contains('offen'))umdrehen();};
+$('bUmdrehen').onclick=umdrehen;
+$('bVorlesen').onclick=function(){spiele(runde.liste[runde.i].id+'_Frage',true);};
+$('bErklaerung').onclick=function(){spiele(runde.liste[runde.i].id+'_Erklaerung',true);};
+alle('#kHinten [data-b]').forEach(function(b){b.onclick=function(){
+ var k=runde.liste[runde.i], w=+b.dataset.b;bewerte('k',k.id,w);merkeErgebnis(k.id,w===2);
+ if(naechste())zeigeKarte();
+};});
+
+/* ================= Lernart Hörmodus ================= */
+var hLaeuft=false, hTimer=null;
+function zeigeHoeren(){var k=runde.liste[runde.i];rundeKopf('h');$('hFrage').textContent=k.q;$('hCountdown').textContent='';}
+function hoerenStop(){hLaeuft=false;clearInterval(hTimer);if($('bHPlay'))$('bHPlay').textContent='▶';}
+function hoerenSchritt(){
+ if(!hLaeuft)return;var k=runde.liste[runde.i];
+ $('hStatus').textContent='Frage';
+ spiele(k.id+'_Frage',true).then(function(){
+  if(!hLaeuft)return;var rest=+$('hPause').value;$('hStatus').textContent='Überlege dir die Antwort';$('hCountdown').textContent=rest;
+  return new Promise(function(weiter){hTimer=setInterval(function(){rest--;$('hCountdown').textContent=rest>0?rest:'';if(rest<=0){clearInterval(hTimer);weiter();}},1000);});
+ }).then(function(){
+  if(!hLaeuft)return;$('hStatus').textContent='Antwort';return spiele(k.id+'_Erklaerung',true);
+ }).then(function(){
+  if(!hLaeuft)return;
+  if(runde.i>=runde.liste.length-1){hoerenStop();$('hStatus').textContent='Alle Karten gehört.';spiele('G_Geschafft',true);return;}
+  runde.i++;zeigeHoeren();setTimeout(hoerenSchritt,900);
+ });
+}
+$('bHPlay').onclick=function(){if(hLaeuft){stopTon();hoerenStop();$('hStatus').textContent='Angehalten';$('hCountdown').textContent='';}else{hLaeuft=true;$('bHPlay').textContent='⏸';hoerenSchritt();}};
+function hSpringen(d){var war=hLaeuft;stopTon();hoerenStop();runde.i=Math.max(0,Math.min(runde.liste.length-1,runde.i+d));zeigeHoeren();
+ if(war){hLaeuft=true;$('bHPlay').textContent='⏸';hoerenSchritt();}else $('hStatus').textContent='Tippe auf Abspielen.';}
+$('bHWeiter').onclick=function(){hSpringen(1);};$('bHZurueck').onclick=function(){hSpringen(-1);};
+
+/* ================= Fachwörter ================= */
+function vokZahlen(){var z={gesamt:VOK.length,sicher:0,lernt:0,neu:0};VOK.forEach(function(v){var s=eintrag('v',v.id);if(!s)z.neu++;else if(istSicher(s))z.sicher++;else z.lernt++;});return z;}
+function baueVokabeln(){
+ var z=vokZahlen();$('vokInfo').textContent=VOK.length+' Fachwörter aus dem Griechischen und Lateinischen, übersetzt in Alltagsdeutsch. '+z.sicher+' davon sitzen schon.';
+ $('vokBalken').outerHTML=balken(z).replace('class="balken"','class="balken" id="vokBalken" style="margin-top:10px"');
+ zeigeVokListe();
+}
+function zeigeVokListe(){
+ var q=norm($('vokSuche').value);
+ var l=VOK.filter(function(v){return !q||norm(v.t+' '+v.w+' '+v.u+' '+v.h).indexOf(q)!==-1;});
+ $('vokListe').innerHTML=l.length?l.map(function(v){var s=eintrag('v',v.id);
+  return '<div class="vok"><div class="oben"><div><b>'+esc(v.t)+'</b> '+(istSicher(s)?'<span class="marke">sitzt</span>':'')+'<div class="detail"><em>'+esc(v.u)+'</em></div></div>'+
+   '<button class="rund" data-hoer="'+v.id+'" aria-label="Anhören">🔊</button></div>'+
+   '<div class="detail">Herkunft: '+esc(v.h)+' · wörtlich: „'+esc(v.w)+'“<br>Beispiel: '+esc(v.b)+'</div></div>';}).join(''):'<p class="klein-grau">Kein Fachwort gefunden.</p>';
+ alle('#vokListe [data-hoer]').forEach(function(b){b.onclick=function(){var id=b.dataset.hoer;spiele(id+'_Begriff',true).then(function(){return spiele(id+'_Bedeutung',true);});};});
+}
+$('vokSuche').oninput=zeigeVokListe;
+
+var quiz=null;
+function starteQuiz(richtung){
+ var f=VOK.filter(function(v){return faellig(eintrag('v',v.id));}), nu=VOK.filter(function(v){return !eintrag('v',v.id);});
+ var l=mische(f).slice(0,10);l=l.concat(nu.slice(0,10-l.length));
+ if(l.length<10)l=l.concat(mische(VOK.filter(function(v){return l.indexOf(v)===-1;})).slice(0,10-l.length));
+ quiz={r:richtung,liste:mische(l),i:0,ok:0,nochmal:{}};zeige('vVokQuiz');zeigeQuiz();
+}
+function zeigeQuiz(){
+ var v=quiz.liste[quiz.i], vor=quiz.r==='vor';stopTon();
+ $('qZaehler').textContent='Wort '+(quiz.i+1)+' von '+quiz.liste.length;$('qBalken').style.width=(quiz.i/quiz.liste.length*100)+'%';
+ $('qAufgabe').textContent=vor?'Was bedeutet dieses Fachwort?':'Welches Fachwort ist gemeint?';
+ $('qWort').textContent=vor?v.t:v.u;$('qWort').style.fontSize=vor?'2rem':'1.4rem';$('qHerkunft').textContent=vor?v.h:'';
+ var andere=mische(VOK.filter(function(x){return x!==v&&norm(x.u)!==norm(v.u)&&norm(x.t)!==norm(v.t);})).slice(0,3);
+ var opt=mische([v].concat(andere));
+ $('qOptionen').innerHTML=opt.map(function(o){return '<button data-id="'+o.id+'">'+esc(vor?o.u:o.t)+'</button>';}).join('');
+ alle('#qOptionen button').forEach(function(b){b.onclick=function(){quizAntwort(b);};});
+ $('qInfo').hidden=true;$('bQWeiter').hidden=true;
+ if(vor)spiele(v.id+'_Begriff',true);
+}
+function quizAntwort(b){
+ var v=quiz.liste[quiz.i], ok=b.dataset.id===v.id;
+ alle('#qOptionen button').forEach(function(x){x.disabled=true;if(x.dataset.id===v.id)x.classList.add('ok');});
+ if(!ok)b.classList.add('nein');
+ if(!quiz.nochmal[v.id]){bewerte('v',v.id,ok?2:0);if(ok)quiz.ok++;}
+ if(!ok&&!quiz.nochmal[v.id]){quiz.nochmal[v.id]=1;quiz.liste.push(v);}
+ $('qInfo').hidden=false;$('qInfo').className='ergebnis '+(ok?'richtig':'falsch');
+ $('qInfo').innerHTML='<h3>'+(ok?'✓ Richtig':'Merke dir')+'</h3><b>'+esc(v.t)+'</b> = '+esc(v.u)+'<div class="detail klein-grau" style="margin-top:6px">Herkunft: '+esc(v.h)+' · wörtlich: „'+esc(v.w)+'“<br>Beispiel: '+esc(v.b)+'</div>';
+ $('bQWeiter').hidden=false;
+ spiele(v.id+'_Bedeutung',true);
+}
+$('bQWeiter').onclick=function(){
+ if(quiz.i>=quiz.liste.length-1){
+  stopTon();var n=Object.keys(quiz.nochmal).length, g=quiz.liste.length-n;
+  $('qInfo').className='ergebnis richtig';$('qInfo').innerHTML='<h3>Quiz geschafft</h3>'+quiz.ok+' von '+g+' Fachwörtern beim ersten Versuch richtig.';
+  $('qOptionen').innerHTML='';$('qWort').textContent='Geschafft';$('qHerkunft').textContent='';$('qAufgabe').textContent='';$('qBalken').style.width='100%';
+  $('bQWeiter').hidden=true;if(quiz.ok>=g*.8)konfetti();spiele('G_Geschafft',true);return;
+ }
+ quiz.i++;zeigeQuiz();
+};
+$('bQHoeren').onclick=function(){var v=quiz.liste[quiz.i];if(v)spiele(v.id+'_Begriff',true).then(function(){return spiele(v.id+'_Bedeutung',true);});};
+$('bVokVor').onclick=function(){starteQuiz('vor');};$('bVokRueck').onclick=function(){starteQuiz('rueck');};
+
+/* ================= Fortschritt ================= */
+function baueFortschritt(){
+ var z=stapelZahlen(null), p=Math.round(z.sicher/z.gesamt*100);
+ $('fProzent').textContent=p+' %';$('fRing').style.setProperty('--p',p);
+ var r=0,x=0;Object.keys(stand.k).forEach(function(id){r+=stand.k[id].r;x+=stand.k[id].x;});
+ $('fText').textContent=z.sicher+' von '+z.gesamt+' Karten sicher, '+z.lernt+' im Lernen, '+z.neu+' noch neu. Insgesamt '+r+'-mal richtig und '+x+'-mal falsch beantwortet.';
+ var h=heute(), tage=['So','Mo','Di','Mi','Do','Fr','Sa'], max=1, w=[];
+ for(var i=6;i>=0;i--){var n=stand.tage[h-i]||0;max=Math.max(max,n);w.push({n:n,t:tage[new Date((h-i)*86400000).getUTCDay()]});}
+ $('fWoche').innerHTML=w.map(function(d){return '<div><span>'+(d.n||'')+'</span><i style="height:'+(d.n/max*60)+'px"></i>'+d.t+'</div>';}).join('');
+ $('fStapel').innerHTML=D.decks.map(function(d){var s=stapelZahlen(d.id);return '<div style="margin:8px 0 14px"><div class="reihe zwischen"><b>'+esc(d.name)+'</b><span class="klein-grau">'+s.sicher+' / '+s.gesamt+'</span></div><div style="margin-top:6px">'+balken(s)+'</div></div>';}).join('')+
+  '<div style="margin:8px 0 6px"><div class="reihe zwischen"><b>Fachwort-Quiz</b><span class="klein-grau">'+vokZahlen().sicher+' / '+VOK.length+'</span></div><div style="margin-top:6px">'+balken(vokZahlen())+'</div></div>'+
+  '<div class="legende"><span><i style="background:var(--teal)"></i>sicher</span><span><i style="background:var(--lila)"></i>wird gelernt</span><span><i style="background:rgba(255,255,255,.12)"></i>neu</span></div>';
+ var schwer=Object.keys(stand.k).filter(function(id){return stand.k[id].x>0&&KARTE[id];}).sort(function(a,b){return stand.k[b].x-stand.k[a].x;}).slice(0,5);
+ $('fSchwer').innerHTML=schwer.length?schwer.map(function(id){return '<div class="vok"><div class="oben"><span>'+esc(KARTE[id].q)+'</span><span class="marke" style="background:rgba(255,107,107,.15);color:var(--rot)">'+stand.k[id].x+'× falsch</span></div></div>';}).join('')+
+  '<div class="knoepfe"><button class="haupt klein" id="bSchwer">Diese Karten üben</button></div>':'<p class="klein-grau">Noch keine Fehler. Sehr gut!</p>';
+ if(schwer.length)$('bSchwer').onclick=function(){starteRunde('sprechen',schwer.map(function(id){return KARTE[id];}));};
+ $('fZiel').value=String(stand.ziel||20);
+}
+$('fZiel').onchange=function(){stand.ziel=+$('fZiel').value;speichern();};
+$('bReset').onclick=function(){if(confirm('Wirklich den ganzen Lernstand auf diesem Gerät zurücksetzen?')){stand={k:{},v:{},tage:{},ziel:stand.ziel||20};speichern();baueFortschritt();}};
+
+if(NATIV)$('tippfeld').placeholder='Oder Antwort hier tippen';
+else if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+modus(false);
+var STARTSEITE=new URLSearchParams(location.search).get('ansicht');   /* Direktsprung, zum Beispiel für App-Verknüpfungen */
+if(['vHeute','vLernen','vVokabeln','vFortschritt'].indexOf(STARTSEITE)===-1)STARTSEITE='vHeute';
+if(nutzer&&konten[nutzer]){ladeStand();zeige(STARTSEITE);}else zeige('vAnmelden');
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+ "name": "Pflege Lernkarten mit Valentino",
+ "short_name": "Lernkarten",
+ "description": "Lernkarten für die Ausbildung Pflegefachassistenz: Valentino fragt, du antwortest laut. Mit Lernkartei, Hörmodus, Prüfungsmodus und Fachwort-Quiz.",
+ "lang": "de",
+ "start_url": "./index.html",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#0b1220",
+ "theme_color": "#0b1220",
+ "icons": [
+  {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+  {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+  {"src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+  {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+ ],
+ "shortcuts": [
+  {"name": "Lernen", "url": "./index.html?ansicht=vLernen", "icons": [{"src": "icons/icon-192.png", "sizes": "192x192"}]},
+  {"name": "Fachwörter", "url": "./index.html?ansicht=vVokabeln", "icons": [{"src": "icons/icon-192.png", "sizes": "192x192"}]},
+  {"name": "Fortschritt", "url": "./index.html?ansicht=vFortschritt", "icons": [{"src": "icons/icon-192.png", "sizes": "192x192"}]}
+ ]
+}
